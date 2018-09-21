@@ -4,7 +4,6 @@ const rotateWithCenterUsingBuiltin = (center, angle) => {
 	translate(-center.x, -center.y);
 };
 
-
 class Task1 extends Task {
 	setup() {
 		this.origin = new Point(0, -100);
@@ -17,10 +16,6 @@ class Task1 extends Task {
 		const { origin, square, triangle, center, useBuiltin } = this;
 		background(255);
 		drawGrid(20);
-		if (mouseIsPressed) {
-			center.x = mouseX - width / 2;
-			center.y = mouseY - height / 2;
-		}
 		const angle = radians(millis() / 10);
 		// const angle = radians(45);
 		strokeWeight(2);
@@ -38,5 +33,9 @@ class Task1 extends Task {
 		}
 		stroke(0);
 		center.draw();
+	}
+	mouseDragged(){
+		const position = getMouse();
+		if(position.isVisible()) this.center = position;
 	}
 }
