@@ -36,7 +36,7 @@ class Task2 extends Task {
 			.map(n => {
 				const axis = this.points[n];
 				const basis = choice
-					.filter(i => i != n)
+					.filter(i => i !== n)
 					.map(i => {
 						return x => (x - this.points[i].x) / (axis.x - this.points[i].x);
 					})

@@ -1,7 +1,7 @@
 let WIDTH = 640;
 let HEIGHT = 480;
 let task = null;
-let number = 1;
+let number = 2;
 
 /**
  *   http://sites.google.com/site/cabinetvps/
@@ -20,13 +20,13 @@ function reset() {
 function createOptions() {
 	const data = TASKS.map(
 		(task, key) =>
-			`<option value="${key}"${
-				number == key ? ' selected="selected"' : ""
-			}>Task ${key + 1}</option>`
+			`<option value="${key}" ${
+				number === key ? ' selected="selected"' : ""
+				}>Task ${key + 1}</option>`
 	);
 	const select = document.createElement("select");
 	select.innerHTML = data.join("");
-	select.onchange = function() {
+	select.onchange = function () {
 		number = this.value;
 		reset();
 	};
@@ -45,18 +45,23 @@ function setup() {
 function draw() {
 	task.draw();
 }
+
 function mousePressed() {
 	task.mousePressed();
 }
+
 function mouseReleased() {
 	task.mouseReleased();
 }
+
 function mouseDragged() {
 	task.mouseDragged();
 }
+
 function mouseClicked() {
 	task.mouseClicked();
 }
+
 function mouseMoved() {
 	task.mouseMoved();
 }

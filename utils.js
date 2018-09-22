@@ -1,14 +1,15 @@
 const range = (to, start = 0, step = 1) => {
 	return Array.from(
-		{ length: Math.floor((to - start) / step) },
+		{length: Math.floor((to - start) / step)},
 		(x, i) => start + i * step
 	)
 };
 
-function drawGrid(grid) {
+function drawGrid(grid, ortho = false) {
 	push();
 	strokeWeight(0.5);
 	stroke(0);
+	if (ortho) translate(0, 0, -1000);
 	for (let i = -width; i < width; i += grid) {
 		line(i, -height, i, height);
 	}
@@ -22,6 +23,47 @@ function drawGrid(grid) {
 	pop();
 }
 
+function drawCustomGrid(grid, h, w, bgOffset = -1) {
+	push();
+	strokeWeight(0.5);
+	stroke(0);
+	for (let i = 0; i < w; i += grid) {
+		line(i, 0, i, h);
+	}
+	for (let i = 0; i < h; i += grid) {
+		line(0, i, w, i);
+	}
+	// just to make the grid look better
+	// line(-width / 2 + 1, -height, -width / 2 + 1, height);
+	// line(-width, height / 2 - 1, width, height / 2 - 1);
+	translate(0, 0, bgOffset);
+	fill(255);
+	rect(1, 0, w, h - 1);
+
+	pop();
+}
+
+const drawGrid3D = (gapSize, size, option = 0, drawGraph = () => '') => {
+	const angle = millis() / 2000;
+	const change = rotateY;
+	push();
+	translate(0, 0, -1000);
+	rotateX(PI);
+	rotateY(PI);
+	rotateX(1 / sqrt(2));
+	// rotateY(radians(-50));
+	change(map(option, 0, 100, radians(0), radians(-100)));
+	drawCustomGrid(gapSize, size, size, -1);
+	rotateY(-HALF_PI);
+	drawCustomGrid(gapSize, size, size, 1);
+	rotateX(-HALF_PI);
+	drawCustomGrid(gapSize, size, size, -1);
+	translate(size / 2, size / 2, size / 2);
+	rotateX(-HALF_PI);
+	drawGraph();
+	pop()
+};
+
 const rotateWithCenter = (center, angle) => {
 	const mtx = new Rotation2D(angle);
 	const translate = mtx.dot(center).sub(center);
@@ -34,7 +76,9 @@ class Drawable {
 	constructor() {
 		this.draw.bind(this);
 	}
-	draw() {}
+
+	draw() {
+	}
 }
 
 class Point extends p5.Vector {
@@ -43,6 +87,7 @@ class Point extends p5.Vector {
 		this.draw.bind(this);
 		this.isVisible.bind(this);
 	}
+
 	draw() {
 		push();
 		strokeWeight(25);
@@ -50,8 +95,12 @@ class Point extends p5.Vector {
 		strokeWeight(1);
 		pop();
 	}
-	isVisible(){
-		return this.x < width/2 && this.x > -width/2 && this.y < height/2 && this.y > -height/2;
+
+	isVisible() {
+		return this.x < width / 2
+			&& this.x > -width / 2
+			&& this.y < height / 2
+			&& this.y > -height / 2;
 	}
 }
 
@@ -113,12 +162,36 @@ class Graph extends Drawable {
 		this.f = func;
 	}
 
-	draw() {
-		strokeWeight(1);
-		for (let i = -width / 2; i <= width / 2; i++) {
+	draw(weight = 1, width = 300, height = 300) {
+		strokeWeight(weight);
+		// for (let i = -width / 2; i <= width / 2; i++) {
+		for (let i = -width; i <= width; i++) {
 			const fx0 = this.f(i);
 			const fx1 = this.f(i + 1);
-			if (min(fx0, fx1) <= height / 2) line(i, -fx0, i + 1, -fx1);
+			if (min(fx0, fx1) <= height) line(i, -fx0, i + 1, -fx1);
+		}
+	}
+}
+
+class Graph3D extends Drawable {
+	constructor(func) {
+		super();
+		this.f = func;
+	}
+
+	draw(weight = 1, width = 300, height = 300, frequency = 5, scale = 0.01) {
+		strokeWeight(weight);
+		const xOff = 1;
+		for (let z = -width; z < width; z += frequency) {
+			const g = this.f(z * scale);
+			push();
+			translate(0, 0, z);
+			for (let i = -width; i <= width; i += xOff) {
+				const fx0 = g(i * scale)/scale;
+				const fx1 = g((i + xOff) * scale)/scale;
+				if (min(fx0, fx1) <= height) line(i, -fx0, i + 1, -fx1);
+			}
+			pop();
 		}
 	}
 }
@@ -134,12 +207,28 @@ class Task {
 		this.mouseMoved.bind(this);
 		this.cleanup.bind(this);
 	}
-	setup() {}
-	draw() {}
-	mousePressed() {}
-	mouseReleased() {}
-	mouseDragged() {}
-	mouseClicked() {}
-	mouseMoved() {}
-	cleanup() {}
+
+	setup() {
+	}
+
+	draw() {
+	}
+
+	mousePressed() {
+	}
+
+	mouseReleased() {
+	}
+
+	mouseDragged() {
+	}
+
+	mouseClicked() {
+	}
+
+	mouseMoved() {
+	}
+
+	cleanup() {
+	}
 }
