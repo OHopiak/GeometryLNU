@@ -1,3 +1,6 @@
+const productReducer = (acc, cur) => x => acc(x) * cur(x);
+const sumReducer = (acc, cur) => x => acc(x) + cur(x);
+
 /**
  * Реалізувати алгоритм  параболічної  інтерполяції.
  * Передбачити інтерактивний ввід та обробку інформації.
@@ -29,32 +32,33 @@ class Task2 extends Task {
 	 * Многочлен Лагранжа
 	 */
 	interpolation() {
-		const choice = range(this.points.length);
-		const product = (acc, cur) => x => acc(x) * cur(x);
-		const sum = (acc, cur) => x => acc(x) + cur(x);
+		const points = this.points;
+		const choice = range(points.length);
 		return choice
 			.map(n => {
-				const axis = this.points[n];
+				const axis = points[n];
 				const basis = choice
 					.filter(i => i !== n)
-					.map(i => {
-						return x => (x - this.points[i].x) / (axis.x - this.points[i].x);
-					})
-					.reduce(product);
+					.map(i => x => (x - points[i].x) / (axis.x - points[i].x))
+					.reduce(productReducer);
 				return x => -basis(x) * axis.y;
 			})
-			.reduce(sum);
+			.reduce(sumReducer);
 	}
 
 	/**
 	 * for simplicity points will be sorted by x
 	 */
 	setup() {
-		this.defaultSize = 7;
-		this.createSlider();
-		this.points = this.generatePoints(-300, 300, this.defaultSize, true);
+		const defaultSize = 7;
+		this.createSlider(2, 12, defaultSize, e => {
+			this.points = this.generatePoints(-300, 300, e.target.value, true);
+			this.graph = new Graph(this.interpolation());
+		});
+		this.points = this.generatePoints(-300, 300, defaultSize, true);
 		this.graph = new Graph(this.interpolation());
 	}
+
 	draw() {
 		background(255);
 		drawGrid(20);
@@ -74,31 +78,15 @@ class Task2 extends Task {
 		});
 		return currentPoint;
 	}
+
 	mousePressed() {
 		const center = getMouse();
 		if (center.isVisible())
 			this.chosenPoint = this.closestPoint(this.points, center);
 	}
+
 	mouseDragged() {
 		const center = getMouse();
 		if (this.chosenPoint && center.isVisible()) this.chosenPoint.y = center.y;
-	}
-
-	createSlider() {
-		this.slider = document.createElement("input");
-		this.slider.type = "range";
-		this.slider.min = 2;
-		this.slider.max = 12;
-		this.slider.value = this.defaultSize;
-		this.slider.id = "task2-slider";
-		this.slider.classList.add("slider");
-		this.slider.onchange = () => {
-			this.points = this.generatePoints(-300, 300, this.slider.value, true);
-			this.graph = new Graph(this.interpolation());
-		};
-		document.getElementById("options").appendChild(this.slider);
-	}
-	cleanup() {
-		document.getElementById("options").removeChild(this.slider);
 	}
 }

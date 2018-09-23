@@ -1,8 +1,8 @@
 const range = (to, start = 0, step = 1) => {
 	return Array.from(
-		{length: Math.floor((to - start) / step)},
+		{ length: Math.floor((to - start) / step) },
 		(x, i) => start + i * step
-	)
+	);
 };
 
 function drawGrid(grid, ortho = false) {
@@ -43,7 +43,7 @@ function drawCustomGrid(grid, h, w, bgOffset = -1) {
 	pop();
 }
 
-const drawGrid3D = (gapSize, size, option = 0, drawGraph = () => '') => {
+const drawGrid3D = (gapSize, size, option = 0, drawGraph = () => "") => {
 	const angle = millis() / 2000;
 	const change = rotateY;
 	push();
@@ -61,7 +61,7 @@ const drawGrid3D = (gapSize, size, option = 0, drawGraph = () => '') => {
 	translate(size / 2, size / 2, size / 2);
 	rotateX(-HALF_PI);
 	drawGraph();
-	pop()
+	pop();
 };
 
 const rotateWithCenter = (center, angle) => {
@@ -72,13 +72,43 @@ const rotateWithCenter = (center, angle) => {
 
 const getMouse = () => new Point(mouseX - width / 2, mouseY - height / 2);
 
+const optionsBox = (id = "options") => document.getElementById(id);
+const removeOption = child => optionsBox().removeChild(child);
+
+const createDropdown = (options, value, onChange, id) => {
+	const dropdown = document.createElement("select");
+
+	options.forEach(option => {
+		const opt = document.createElement("option");
+		opt.selected = option === value ? "selected" : "";
+		opt.innerText = option;
+		opt.value = option;
+		dropdown.appendChild(opt);
+	});
+	dropdown.onchange = onChange;
+	optionsBox(id).appendChild(dropdown);
+	return dropdown;
+};
+
+const createSlider = (min, max, value, onChange, id) => {
+	const slider = document.createElement("input");
+	slider.type = "range";
+	slider.min = min;
+	slider.max = max;
+	slider.value = value;
+	slider.classList.add("slider");
+	slider.onchange = onChange;
+	slider.oninput = onChange;
+	optionsBox(id).appendChild(slider);
+	return slider;
+};
+
 class Drawable {
 	constructor() {
 		this.draw.bind(this);
 	}
 
-	draw() {
-	}
+	draw() {}
 }
 
 class Point extends p5.Vector {
@@ -97,10 +127,12 @@ class Point extends p5.Vector {
 	}
 
 	isVisible() {
-		return this.x < width / 2
-			&& this.x > -width / 2
-			&& this.y < height / 2
-			&& this.y > -height / 2;
+		return (
+			this.x < width / 2 &&
+			this.x > -width / 2 &&
+			this.y < height / 2 &&
+			this.y > -height / 2
+		);
 	}
 }
 
@@ -177,20 +209,40 @@ class Graph3D extends Drawable {
 	constructor(func) {
 		super();
 		this.f = func;
+		this.width = width;
+		this.precompute.bind(this);
 	}
 
-	draw(weight = 1, width = 300, height = 300, frequency = 5, scale = 0.01) {
-		strokeWeight(weight);
+	precompute(width = 300, height = 300, frequency = 5, scale = 0.01) {
+		this.width = width;
+		this.frequency = frequency;
 		const xOff = 1;
-		for (let z = -width; z < width; z += frequency) {
+		this.points = range(width, -width, frequency).map(z => {
 			const g = this.f(z * scale);
+			return range(width, -width, xOff).map(x => -g(x * scale) / scale);
+		});
+		this.lines = this.points.map(z =>
+			z.map((y, i) => ({
+				x1: i - width,
+				x2: i - width + 1,
+				y1: y,
+				y2: z[i + 1]
+			})).filter(l => !isNaN(l.y1 && l.y2) && Math.min(l.y1, l.y2) > -this.width)
+		);
+
+	}
+
+	draw(weight = 1) {
+		if (this.lines) {
+			strokeWeight(weight);
 			push();
-			translate(0, 0, z);
-			for (let i = -width; i <= width; i += xOff) {
-				const fx0 = g(i * scale)/scale;
-				const fx1 = g((i + xOff) * scale)/scale;
-				if (min(fx0, fx1) <= height) line(i, -fx0, i + 1, -fx1);
-			}
+			translate(0, 0, -this.width);
+			this.lines.forEach(z => {
+				translate(0, 0, this.frequency);
+				z.forEach(l => {
+					line(l.x1, l.y1, l.x2, l.y2);
+				});
+			});
 			pop();
 		}
 	}
@@ -198,6 +250,9 @@ class Graph3D extends Drawable {
 
 class Task {
 	constructor() {
+		this.sliders = [];
+		this.dropdowns = [];
+
 		this.setup.bind(this);
 		this.draw.bind(this);
 		this.mousePressed.bind(this);
@@ -206,29 +261,34 @@ class Task {
 		this.mouseClicked.bind(this);
 		this.mouseMoved.bind(this);
 		this.cleanup.bind(this);
+		this.createSlider.bind(this);
+		this.createDropdown.bind(this);
 	}
 
-	setup() {
+	setup() {}
+
+	draw() {}
+
+	mousePressed() {}
+
+	mouseReleased() {}
+
+	mouseDragged() {}
+
+	mouseClicked() {}
+
+	mouseMoved() {}
+
+	createSlider(min, max, value, onChange) {
+		this.sliders.push(createSlider(min, max, value, onChange));
 	}
 
-	draw() {
-	}
-
-	mousePressed() {
-	}
-
-	mouseReleased() {
-	}
-
-	mouseDragged() {
-	}
-
-	mouseClicked() {
-	}
-
-	mouseMoved() {
+	createDropdown(options, value, onChange) {
+		this.dropdowns.push(createDropdown(options, value, onChange));
 	}
 
 	cleanup() {
+		this.sliders.forEach(removeOption);
+		this.dropdowns.forEach(removeOption);
 	}
 }

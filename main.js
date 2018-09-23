@@ -1,7 +1,7 @@
 let WIDTH = 640;
 let HEIGHT = 480;
 let task = null;
-let number = 2;
+let defaultTaskName = "Task 3";
 
 /**
  *   http://sites.google.com/site/cabinetvps/
@@ -9,37 +9,29 @@ let number = 2;
  *   2: 9-10,
  *   3: 6.1,
  */
-const TASKS = [new Task1(), new Task2(), new Task3(), new Task4()];
+const TASKS = {
+	["Task 1"]: new Task1(),
+	["Task 2"]: new Task2(),
+	["Task 3"]: new Task3(),
+	["Task 4"]: new Task4()
+};
 
-function reset() {
+function reset(number) {
 	if (task) task.cleanup();
-	task = number >= 0 && number < TASKS.length ? TASKS[number] : TASKS[0];
+	task = TASKS[number] ? TASKS[number] : TASKS["Task 1"];
 	task.setup();
-}
-
-function createOptions() {
-	const data = TASKS.map(
-		(task, key) =>
-			`<option value="${key}" ${
-				number === key ? ' selected="selected"' : ""
-				}>Task ${key + 1}</option>`
-	);
-	const select = document.createElement("select");
-	select.innerHTML = data.join("");
-	select.onchange = function () {
-		number = this.value;
-		reset();
-	};
-	const wrapper = document.createElement("div");
-	wrapper.appendChild(select);
-	document.getElementById('select-task').appendChild(wrapper);
 }
 
 function setup() {
 	const canvas = createCanvas(WIDTH, HEIGHT, WEBGL);
-	canvas.parent('canvas');
-	reset();
-	createOptions();
+	canvas.parent("canvas");
+	createDropdown(
+		Object.keys(TASKS),
+		defaultTaskName,
+		e => reset(e.target.value),
+		"select-task"
+	);
+	reset(defaultTaskName);
 }
 
 function draw() {
