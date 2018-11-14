@@ -197,7 +197,7 @@ class Graph extends Drawable {
 	draw(weight = 1, width = 300, height = 300) {
 		strokeWeight(weight);
 		// for (let i = -width / 2; i <= width / 2; i++) {
-		for (let i = -width; i <= width; i++) {
+		for (let i = -width; i < width-1; i++) {
 			const fx0 = this.f(i);
 			const fx1 = this.f(i + 1);
 			if (min(fx0, fx1) <= height) line(i, -fx0, i + 1, -fx1);

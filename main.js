@@ -1,7 +1,7 @@
 let WIDTH = 640;
 let HEIGHT = 480;
 let task = null;
-let defaultTaskName = "Task 3";
+let defaultTaskName = "Task 2";
 
 /**
  *   http://sites.google.com/site/cabinetvps/
@@ -13,7 +13,8 @@ const TASKS = {
 	["Task 1"]: new Task1(),
 	["Task 2"]: new Task2(),
 	["Task 3"]: new Task3(),
-	["Task 4"]: new Task4()
+	["Task 4"]: new Task4(),
+	["Task 5"]: new Task5(),
 };
 
 function reset(number) {

@@ -1,4 +1,3 @@
-const parabola = (a = 1, b = 0, c = 0) => x => a * x * x + b * x + c;
 const parabola3D = (a = 1, b = 0, c = 1) => z => x => a * x * x + b * x * z + c * z * z;
 const hemisphere = (radius = 4, coef = 1) => z => x => coef * sqrt(radius * radius - z * z - x * x);
 
@@ -50,6 +49,7 @@ class Task3 extends Task {
 	}
 
 	draw() {
+		// Алгоритмічні основи машинної графіки
 		const {options, graph1, graph2} = this;
 		background(255);
 		const size = 300;

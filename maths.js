@@ -1,10 +1,18 @@
+const MinorX = [["b", "c"], ["a", "c"], ["a", "b"]];
+const MinorY = [["y", "z"], ["x", "z"], ["x", "y"]];
+const Rows2x2 = ["a", "b"];
+const Cols2x2 = ["x", "y"];
+const Rows3x3 = ["a", "b", "c"];
+const Cols3x3 = ["x", "y", "z"];
+
+
 class Matrix {
 	constructor() {
 		this.transpose.bind(this);
 		this.dot.bind(this);
 		this.mul.bind(this);
 		this.det.bind(this);
-		this.reverse.bind(this);
+		this.inverse.bind(this);
 		this.minor.bind(this);
 		this.adjugate.bind(this);
 	}
@@ -12,7 +20,7 @@ class Matrix {
 	dot() {}
 	mul() {}
 	det() {}
-	reverse() {}
+	inverse() {}
 	minor() {}
 	adjugate() {}
 }
@@ -33,15 +41,25 @@ class Matrix2x2 extends Matrix {
 		const { a, b } = this;
 		return a.x * b.y - a.y * b.x;
 	}
+	inverse(){
+		const D = this.det();
+		return new Matrix(
+			new Point( b.y/D, -a.y/D),
+			new Point( -b.x/D, a.x/D),
+		);
+	}
+	mul(mtx) {
+		const trns = mtx.transpose();
+		return new Matrix2x2(
+			...Rows2x2.map(x => new Point(...Rows2x2.map(y => this[x].dot(trns[y]))))
+		);
+	}
+
 	static identity() {
 		return new Matrix2x2(new Point(1, 0), new Point(0, 1));
 	}
 }
 
-const MinorX = [["b", "c"], ["a", "c"], ["a", "b"]];
-const MinorY = [["y", "z"], ["x", "z"], ["x", "y"]];
-const Rows3x3 = ["a", "b", "c"];
-const Cols3x3 = ["x", "y", "z"];
 class Matrix3x3 extends Matrix {
 	constructor(a, b, c) {
 		super();
@@ -94,9 +112,12 @@ class Matrix3x3 extends Matrix {
 		);
 		return new Matrix3x3(...rows);
 	}
-	reverse() {
+	inverse() {
 		const det = this.det();
 		return det ? this.adjugate().mul(Matrix3x3.scale(1 / det)) : null;
+	}
+	solve(vec){
+		return this.inverse().dot(vec)
 	}
 	static scale(coef) {
 		return new Matrix3x3(
@@ -124,3 +145,5 @@ class Rotation2D extends Matrix2x2 {
 		super(new Point(cosA, -sinA), new Point(sinA, cosA));
 	}
 }
+
+const parabola = (a = 1, b = 0, c = 0) => x => a * x * x + b * x + c;
